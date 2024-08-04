@@ -2,7 +2,7 @@
 
 use crate::{
     CanonStateNotification, CanonStateNotificationSender, CanonStateNotifications,
-    ChainInfoTracker, MemoryOverlayStateProvider,
+    ChainInfoTracker, ForkChoiceNotifications, MemoryOverlayStateProvider,
 };
 use parking_lot::RwLock;
 use reth_chainspec::ChainInfo;
@@ -93,6 +93,8 @@ pub(crate) struct CanonicalInMemoryStateInner {
     pub(crate) in_memory_state: InMemoryState,
     /// A broadcast stream that emits events when the canonical chain is updated.
     pub(crate) canon_state_notification_sender: CanonStateNotificationSender,
+    /// A broadcast stream that emits events when the fork choice is updated.
+    pub(crate) fork_choice_notification_sender: broadcast::Sender<SealedHeader>,
 }
 
 impl CanonicalInMemoryStateInner {
@@ -134,11 +136,14 @@ impl CanonicalInMemoryState {
         let chain_info_tracker = ChainInfoTracker::new(header, finalized);
         let (canon_state_notification_sender, _canon_state_notification_receiver) =
             broadcast::channel(CANON_STATE_NOTIFICATION_CHANNEL_SIZE);
+        let (fork_choice_notification_sender, _) =
+            broadcast::channel(CANON_STATE_NOTIFICATION_CHANNEL_SIZE);
 
         let inner = CanonicalInMemoryStateInner {
             chain_info_tracker,
             in_memory_state,
             canon_state_notification_sender,
+            fork_choice_notification_sender,
         };
 
         Self { inner: Arc::new(inner) }
@@ -151,10 +156,13 @@ impl CanonicalInMemoryState {
         let in_memory_state = InMemoryState::default();
         let (canon_state_notification_sender, _canon_state_notification_receiver) =
             broadcast::channel(CANON_STATE_NOTIFICATION_CHANNEL_SIZE);
+        let (fork_choice_notification_sender, _) =
+            broadcast::channel(CANON_STATE_NOTIFICATION_CHANNEL_SIZE);
         let inner = CanonicalInMemoryStateInner {
             chain_info_tracker,
             in_memory_state,
             canon_state_notification_sender,
+            fork_choice_notification_sender,
         };
 
         Self { inner: Arc::new(inner) }
@@ -445,7 +453,7 @@ impl CanonicalInMemoryState {
     pub fn transaction_by_hash(&self, hash: TxHash) -> Option<TransactionSigned> {
         for block_state in self.canonical_chain() {
             if let Some(tx) = block_state.block().block().body.iter().find(|tx| tx.hash() == hash) {
-                return Some(tx.clone())
+                return Some(tx.clone());
             }
         }
         None
@@ -475,10 +483,15 @@ impl CanonicalInMemoryState {
                     timestamp: block_state.block().block.timestamp,
                     excess_blob_gas: block_state.block().block.excess_blob_gas,
                 };
-                return Some((tx.clone(), meta))
+                return Some((tx.clone(), meta));
             }
         }
         None
+    }
+
+    /// Subscribe to fork choice events.
+    pub fn subscribe_fork_choice(&self) -> ForkChoiceNotifications {
+        ForkChoiceNotifications::new(self.inner.fork_choice_notification_sender.subscribe())
     }
 }
 

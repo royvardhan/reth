@@ -10,10 +10,12 @@ use reth_primitives::{
 };
 use reth_provider::{
     BlockchainTreePendingStateProvider, CanonStateNotificationSender, CanonStateNotifications,
-    CanonStateSubscriptions, FullExecutionDataProvider,
+    CanonStateSubscriptions, ForkChoiceNotifications, ForkChoiceSubscriptions,
+    FullExecutionDataProvider,
 };
 use reth_storage_errors::provider::ProviderResult;
 use std::collections::BTreeMap;
+use tokio::sync::broadcast;
 
 /// A `BlockchainTree` that does nothing.
 ///
@@ -23,6 +25,8 @@ use std::collections::BTreeMap;
 pub struct NoopBlockchainTree {
     /// Broadcast channel for canon state changes notifications.
     pub canon_state_notification_sender: Option<CanonStateNotificationSender>,
+    /// Broadcast channel for fork choice notifications.
+    pub fork_choice_notification_sender: Option<broadcast::Sender<SealedHeader>>,
 }
 
 impl NoopBlockchainTree {
@@ -30,7 +34,20 @@ impl NoopBlockchainTree {
     pub const fn with_canon_state_notifications(
         canon_state_notification_sender: CanonStateNotificationSender,
     ) -> Self {
-        Self { canon_state_notification_sender: Some(canon_state_notification_sender) }
+        Self {
+            canon_state_notification_sender: Some(canon_state_notification_sender),
+            fork_choice_notification_sender: None,
+        }
+    }
+
+    /// Create a new `NoopBlockchainTree` with a fork choice notification sender.
+    pub const fn with_fork_choice_notifications(
+        fork_choice_notification_sender: broadcast::Sender<SealedHeader>,
+    ) -> Self {
+        Self {
+            canon_state_notification_sender: None,
+            fork_choice_notification_sender: Some(fork_choice_notification_sender),
+        }
     }
 }
 
@@ -133,5 +150,14 @@ impl CanonStateSubscriptions for NoopBlockchainTree {
             .as_ref()
             .map(|sender| sender.subscribe())
             .unwrap_or_else(|| CanonStateNotificationSender::new(1).subscribe())
+    }
+}
+
+impl ForkChoiceSubscriptions for NoopBlockchainTree {
+    fn subscribe_to_fork_choice(&self) -> ForkChoiceNotifications {
+        self.fork_choice_notification_sender
+            .as_ref()
+            .map(|sender| ForkChoiceNotifications::new(sender.subscribe()))
+            .unwrap_or_else(|| ForkChoiceNotifications::new(broadcast::channel(1).1))
     }
 }

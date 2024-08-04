@@ -52,10 +52,10 @@ impl Stream for CanonStateNotificationStream {
                 Some(Ok(notification)) => Poll::Ready(Some(notification)),
                 Some(Err(err)) => {
                     debug!(%err, "canonical state notification stream lagging behind");
-                    continue
+                    continue;
                 }
                 None => Poll::Ready(None),
-            }
+            };
         }
     }
 }
@@ -148,7 +148,7 @@ pub struct ForkChoiceNotifications(broadcast::Receiver<SealedHeader>);
 impl ForkChoiceNotifications {
     /// Creates a new `ForkChoiceNotifications` instance.
     /// `receiver` - A broadcast receiver for `SealedHeader` notifications.
-    pub fn new(receiver: broadcast::Receiver<SealedHeader>) -> Self {
+    pub const fn new(receiver: broadcast::Receiver<SealedHeader>) -> Self {
         Self(receiver)
     }
 }
@@ -182,7 +182,7 @@ impl Stream for ForkChoiceStream {
                 Some(Ok(notification)) => Poll::Ready(Some(notification)),
                 Some(Err(err)) => {
                     debug!(%err, "finalized header notification stream lagging behind");
-                    continue
+                    continue;
                 }
                 None => Poll::Ready(None),
             };

@@ -8,7 +8,7 @@ use crate::{
     StaticFileProviderFactory, TransactionVariant, TransactionsProvider, WithdrawalsProvider,
 };
 use alloy_rpc_types_engine::ForkchoiceState;
-use reth_chain_state::{CanonicalInMemoryState, ForkChoiceNotifications, ForkChoiceSubscriptions};
+use reth_chain_state::CanonicalInMemoryState;
 use reth_chainspec::{ChainInfo, ChainSpec};
 use reth_db_api::{
     database::Database,
