@@ -511,6 +511,6 @@ impl CanonStateSubscriptions for NoopProvider {
 
 impl ForkChoiceSubscriptions for NoopProvider {
     fn subscribe_to_fork_choice(&self) -> ForkChoiceNotifications {
-        ForkChoiceNotifications::new(broadcast::channel(1).1)
+        broadcast::channel(1).1
     }
 }

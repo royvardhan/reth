@@ -157,7 +157,7 @@ impl ForkChoiceSubscriptions for NoopBlockchainTree {
     fn subscribe_to_fork_choice(&self) -> ForkChoiceNotifications {
         self.fork_choice_notification_sender
             .as_ref()
-            .map(|sender| ForkChoiceNotifications::new(sender.subscribe()))
-            .unwrap_or_else(|| ForkChoiceNotifications::new(broadcast::channel(1).1))
+            .map(|sender| sender.subscribe())
+            .unwrap_or_else(|| broadcast::channel(1).1)
     }
 }

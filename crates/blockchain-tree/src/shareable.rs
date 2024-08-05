@@ -14,8 +14,8 @@ use reth_primitives::{
     SealedHeader,
 };
 use reth_provider::{
-    BlockchainTreePendingStateProvider, CanonStateSubscriptions, FullExecutionDataProvider,
-    ProviderError,
+    BlockchainTreePendingStateProvider, CanonStateSubscriptions, ForkChoiceSubscriptions,
+    FullExecutionDataProvider, ProviderError,
 };
 use reth_storage_errors::provider::ProviderResult;
 use std::{collections::BTreeMap, sync::Arc};
@@ -192,5 +192,15 @@ where
     fn subscribe_to_canonical_state(&self) -> reth_provider::CanonStateNotifications {
         trace!(target: "blockchain_tree", "Registered subscriber for canonical state");
         self.tree.read().subscribe_canon_state()
+    }
+}
+
+impl<DB, E> ForkChoiceSubscriptions for ShareableBlockchainTree<DB, E>
+where
+    DB: Send + Sync,
+    E: Send + Sync,
+{
+    fn subscribe_to_fork_choice(&self) -> reth_provider::ForkChoiceNotifications {
+        self.tree.read().subscribe_fork_choice()
     }
 }

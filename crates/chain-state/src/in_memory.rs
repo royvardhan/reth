@@ -1,8 +1,9 @@
 //! Types for tracking the canonical chain state in memory.
 
 use crate::{
-    CanonStateNotification, CanonStateNotificationSender, CanonStateNotifications,
-    ChainInfoTracker, ForkChoiceNotifications, MemoryOverlayStateProvider,
+    notifications::ForkChoiceNotificationSender, CanonStateNotification,
+    CanonStateNotificationSender, CanonStateNotifications, ChainInfoTracker,
+    ForkChoiceNotifications, MemoryOverlayStateProvider,
 };
 use parking_lot::RwLock;
 use reth_chainspec::ChainInfo;
@@ -23,6 +24,9 @@ use tokio::sync::broadcast;
 
 /// Size of the broadcast channel used to notify canonical state events.
 const CANON_STATE_NOTIFICATION_CHANNEL_SIZE: usize = 256;
+
+/// Size of the broadcast channel used to notify fork choice events.
+const FORK_CHOICE_NOTIFICATION_CHANNEL_SIZE: usize = 256;
 
 /// Container type for in memory state data of the canonical chain.
 ///
@@ -94,7 +98,7 @@ pub(crate) struct CanonicalInMemoryStateInner {
     /// A broadcast stream that emits events when the canonical chain is updated.
     pub(crate) canon_state_notification_sender: CanonStateNotificationSender,
     /// A broadcast stream that emits events when the fork choice is updated.
-    pub(crate) fork_choice_notification_sender: broadcast::Sender<SealedHeader>,
+    pub(crate) fork_choice_notification_sender: ForkChoiceNotificationSender,
 }
 
 impl CanonicalInMemoryStateInner {
@@ -137,7 +141,7 @@ impl CanonicalInMemoryState {
         let (canon_state_notification_sender, _canon_state_notification_receiver) =
             broadcast::channel(CANON_STATE_NOTIFICATION_CHANNEL_SIZE);
         let (fork_choice_notification_sender, _) =
-            broadcast::channel(CANON_STATE_NOTIFICATION_CHANNEL_SIZE);
+            broadcast::channel(FORK_CHOICE_NOTIFICATION_CHANNEL_SIZE);
 
         let inner = CanonicalInMemoryStateInner {
             chain_info_tracker,
@@ -491,7 +495,7 @@ impl CanonicalInMemoryState {
 
     /// Subscribe to fork choice events.
     pub fn subscribe_fork_choice(&self) -> ForkChoiceNotifications {
-        ForkChoiceNotifications::new(self.inner.fork_choice_notification_sender.subscribe())
+        self.inner.fork_choice_notification_sender.subscribe()
     }
 }
 

@@ -43,8 +43,8 @@ pub mod writer;
 
 pub use reth_chain_state::{
     CanonStateNotification, CanonStateNotificationSender, CanonStateNotificationStream,
-    CanonStateNotifications, CanonStateSubscriptions, ForkChoiceNotifications,
-    ForkChoiceSubscriptions,
+    CanonStateNotifications, CanonStateSubscriptions, ForkChoiceNotificationSender,
+    ForkChoiceNotifications, ForkChoiceSubscriptions,
 };
 
 pub(crate) fn to_range<R: std::ops::RangeBounds<u64>>(bounds: R) -> std::ops::Range<u64> {

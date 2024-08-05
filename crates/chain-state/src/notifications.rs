@@ -1,7 +1,6 @@
 //! Canonical chain state notification trait and types.
 
 use auto_impl::auto_impl;
-use derive_more::{Deref, DerefMut};
 use reth_execution_types::{BlockReceipts, Chain};
 use reth_primitives::{SealedBlockWithSenders, SealedHeader};
 use std::{
@@ -141,17 +140,11 @@ impl CanonStateNotification {
     }
 }
 
-/// Wrapper around a broadcast receiver that receives fork choice notifications.
-#[derive(Debug, Deref, DerefMut)]
-pub struct ForkChoiceNotifications(broadcast::Receiver<SealedHeader>);
+/// Type alias for a receiver that receives [`SealedHeader`]
+pub type ForkChoiceNotifications = broadcast::Receiver<SealedHeader>;
 
-impl ForkChoiceNotifications {
-    /// Creates a new `ForkChoiceNotifications` instance.
-    /// `receiver` - A broadcast receiver for `SealedHeader` notifications.
-    pub const fn new(receiver: broadcast::Receiver<SealedHeader>) -> Self {
-        Self(receiver)
-    }
-}
+/// Type alias for a sender that sends [`SealedHeader`]
+pub type ForkChoiceNotificationSender = broadcast::Sender<SealedHeader>;
 
 /// A trait that allows to register to fork choice related events
 /// and get notified when a new fork choice is available.
@@ -161,7 +154,7 @@ pub trait ForkChoiceSubscriptions: Send + Sync {
 
     /// Convenience method to get a stream of the new head of the chain.
     fn fork_choice_stream(&self) -> ForkChoiceStream {
-        ForkChoiceStream { st: BroadcastStream::new(self.subscribe_to_fork_choice().0) }
+        ForkChoiceStream { st: BroadcastStream::new(self.subscribe_to_fork_choice()) }
     }
 }
 
