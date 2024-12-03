@@ -61,7 +61,7 @@ impl Receipt {
 
     /// Calculates the bloom filter for the receipt and returns the [`ReceiptWithBloom`] container
     /// type.
-    pub fn with_bloom(self) -> ReceiptWithBloom {
+    pub fn with_bloom(self) -> ReceiptWithBloom<Self> {
         self.into()
     }
 
@@ -190,11 +190,16 @@ impl<T> Default for Receipts<T> {
 
 pub trait ReceiptEncoding {
     fn as_encoder(&self) -> ReceiptWithBloomEncoder<'_>;
+    fn encode_inner(&self, out: &mut dyn BufMut, with_header: bool);
 }
 
 impl ReceiptEncoding for ReceiptWithBloom {
     fn as_encoder(&self) -> ReceiptWithBloomEncoder<'_> {
         ReceiptWithBloomEncoder { receipt: &self.receipt, bloom: &self.logs_bloom }
+    }
+
+    fn encode_inner(&self, out: &mut dyn BufMut, with_header: bool) {
+        self.as_encoder().encode_inner(out, with_header)
     }
 }
 
