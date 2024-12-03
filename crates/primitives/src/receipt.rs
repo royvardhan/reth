@@ -399,7 +399,7 @@ mod tests {
                 #[cfg(feature = "optimism")]
                 deposit_receipt_version: None,
             },
-            bloom: [0; 256].into(),
+            logs_bloom: [0; 256].into(),
         };
 
         receipt.encode(&mut data);
@@ -433,7 +433,7 @@ mod tests {
                 #[cfg(feature = "optimism")]
                 deposit_receipt_version: None,
             },
-            bloom: [0; 256].into(),
+            logs_bloom: [0; 256].into(),
         };
 
         let receipt = ReceiptWithBloom::decode(&mut &data[..]).unwrap();
@@ -455,7 +455,7 @@ mod tests {
                 deposit_nonce: Some(4012991),
                 deposit_receipt_version: None,
             },
-            bloom: [0; 256].into(),
+            logs_bloom: [0; 256].into(),
         };
 
         let receipt = ReceiptWithBloom::decode(&mut &data[..]).unwrap();
@@ -481,7 +481,7 @@ mod tests {
                 deposit_nonce: Some(4012991),
                 deposit_receipt_version: Some(1),
             },
-            bloom: [0; 256].into(),
+            logs_bloom: [0; 256].into(),
         };
 
         let receipt = ReceiptWithBloom::decode(&mut &data[..]).unwrap();
@@ -535,7 +535,7 @@ mod tests {
                 #[cfg(feature = "optimism")]
                 deposit_receipt_version: None,
             },
-            bloom: Bloom::default(),
+            logs_bloom: Bloom::default(),
         };
 
         let encoded = receipt.encoded_2718();
@@ -557,7 +557,7 @@ mod tests {
                 #[cfg(feature = "optimism")]
                 deposit_receipt_version: None,
             },
-            bloom: Bloom::default(),
+            logs_bloom: Bloom::default(),
         };
 
         let legacy_encoded = legacy_receipt.encoded_2718();
