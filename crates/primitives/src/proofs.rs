@@ -95,7 +95,7 @@ mod tests {
                 cumulative_gas_used: 102068,
                 logs,
             },
-            bloom,
+            logs_bloom: bloom,
         };
         let receipt = vec![receipt];
         let root = calculate_receipt_root(&receipt);

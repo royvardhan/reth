@@ -181,12 +181,6 @@ impl<T> FromIterator<Vec<Option<T>>> for Receipts<T> {
     }
 }
 
-impl From<Receipt> for ReceiptWithBloom<Receipt> {
-    fn from(receipt: Receipt) -> Self {
-        let bloom = receipt.bloom_slow();
-        Self { receipt, logs_bloom: bloom }
-    }
-}
 
 impl<T> Default for Receipts<T> {
     fn default() -> Self {
